@@ -1,4 +1,4 @@
-import * as fs from 'fs/promises';
+import * as fsPromises from 'fs/promises';
 import * as path from 'path';
 
 interface CacheEntry {
@@ -14,11 +14,14 @@ export class CacheService {
   constructor(cacheDir: string) {
     this.cacheFile = path.join(cacheDir, '.mokbhaimj-gdrive-sync-cache.json');
     this.cache = new Map();
+
+    fsPromises.mkdir(cacheDir, { recursive: true });
+    fsPromises.writeFile(this.cacheFile, JSON.stringify({}, null, 2));
   }
 
   async loadCache(): Promise<void> {
     try {
-      const data = await fs.readFile(this.cacheFile, 'utf-8');
+      const data = await fsPromises.readFile(this.cacheFile, 'utf-8');
       const entries = JSON.parse(data);
       this.cache = new Map(Object.entries(entries));
     } catch (error) {
@@ -29,7 +32,10 @@ export class CacheService {
 
   async saveCache(): Promise<void> {
     const entries = Object.fromEntries(this.cache);
-    await fs.writeFile(this.cacheFile, JSON.stringify(entries, null, 2));
+    await fsPromises.writeFile(
+      this.cacheFile,
+      JSON.stringify(entries, null, 2)
+    );
   }
 
   get(fileId: string): CacheEntry | undefined {
