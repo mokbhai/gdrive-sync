@@ -321,7 +321,7 @@ class DriveService {
         this.logger.error(
           `Retrying download of ${filePath} after ${delay}ms (attempt ${
             retryCount + 1
-          }/${this.MAX_RETRIES})`,
+          }/${this.MAX_RETRIES})`
         );
         this.emit('fileRetry', { fileId, filePath, retryCount, delay });
         await sleep(delay);
