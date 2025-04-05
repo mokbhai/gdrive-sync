@@ -32,7 +32,10 @@ class Logger {
     }
   }
 
-  public error(message: string): void {
+  public error(message: string, emit?: any): void {
+    if (emit) {
+      emit('error', { message });
+    }
     if (this.enableLogging) {
       this?.logger?.error(message);
     }

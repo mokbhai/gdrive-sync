@@ -22,15 +22,18 @@ class DriveService {
   private cacheService: CacheService | null = null;
   private queue: RetryQueueItem[] = [];
   private isProcessing: boolean = false;
+  private emit: any;
 
   constructor(
     driveClient: any,
     logger: Logger,
-    cacheService: CacheService | null
+    cacheService: CacheService | null,
+    emit: any
   ) {
     this.driveClient = driveClient;
     this.logger = logger;
     this.cacheService = cacheService;
+    this.emit = emit;
   }
 
   private async queueAdd(item: RetryQueueItem) {
@@ -90,9 +93,11 @@ class DriveService {
         fields: 'files(id, name, mimeType)',
       });
 
+      this.emit('connectionTested', { success: true });
       return true;
     } catch (error) {
       this.logger.error(`Error testing connection: ${error}`);
+      this.emit('connectionError', { error });
       throw error;
     }
   }
@@ -120,10 +125,11 @@ class DriveService {
       })) as GDriveFile[];
 
       this.logger.log(`Found ${folders.length} folders in drive`);
+      this.emit('foldersListed', { count: folders.length, folders });
 
       return folders;
     } catch (error) {
-      this.logger.error(`Error listing files: ${error}`);
+      this.logger.error(`Error listing files: ${error}`, this.emit);
       throw error;
     }
   }
@@ -154,10 +160,16 @@ class DriveService {
       })) as GDriveFile[];
 
       this.logger.log(`Found ${files.length} files in ${folderPath}`);
+      this.emit('filesListed', {
+        folderId,
+        folderPath,
+        count: files.length,
+        files,
+      });
 
       return files;
     } catch (error) {
-      this.logger.error(`Error listing files: ${error}`);
+      this.logger.error(`Error listing files: ${error}`, this.emit);
       throw error;
     }
   }
@@ -174,6 +186,8 @@ class DriveService {
     folderPath: string
   ): Promise<LocalFolder> {
     try {
+      this.emit('folderDownloadStarted', { folderId, folderPath });
+
       const files = await this.listFiles(folderId, folderPath);
       const folder: LocalFolder = {
         name: path.basename(folderPath),
@@ -201,7 +215,10 @@ class DriveService {
             try {
               if (file.mimeType !== 'application/vnd.google-apps.folder') {
                 const filePath = path.join(folderPath, file.name);
+                this.emit('fileDownloadStarted', { file, filePath });
+
                 await this.downloadFile(file.id, filePath);
+
                 folder.files.push({
                   name: file.name,
                   id: file.id,
@@ -209,6 +226,8 @@ class DriveService {
                   mimeType: file.mimeType,
                   modifiedTime: file.modifiedTime || '',
                 });
+
+                this.emit('fileDownloaded', { file, filePath });
               } else {
                 const subFolderPath = path.join(folderPath, file.name);
                 const subFolder = await this.downloadFilesAndFolder(
@@ -219,16 +238,26 @@ class DriveService {
               }
             } catch (error) {
               this.logger.error(
-                `Error processing file/folder ${file.name}: ${error}`
+                `Error processing file/folder ${file.name}: ${error}`,
+                this.emit
               );
             }
           })
         );
       }
 
+      this.emit('folderDownloaded', {
+        folderId,
+        folderPath,
+        structure: folder,
+      });
       return folder;
     } catch (error) {
-      this.logger.error(`Error processing folder ${folderPath}: ${error}`);
+      this.logger.error(
+        `Error processing folder ${folderPath}: ${error}`,
+        this.emit
+      );
+      this.emit('folderDownloadError', { folderId, folderPath, error });
       throw error;
     }
   }
@@ -292,11 +321,13 @@ class DriveService {
         this.logger.error(
           `Retrying download of ${filePath} after ${delay}ms (attempt ${
             retryCount + 1
-          }/${this.MAX_RETRIES})`
+          }/${this.MAX_RETRIES})`,
         );
+        this.emit('fileRetry', { fileId, filePath, retryCount, delay });
         await sleep(delay);
         return this.downloadFileWithRetry(fileId, filePath, retryCount + 1);
       }
+      this.emit('fileRetryFailed', { fileId, filePath, retryCount, error });
       throw error;
     }
   }
@@ -312,6 +343,7 @@ class DriveService {
       });
 
       if (!metadata.data) {
+        this.emit('fileNotFound', { fileId });
         throw new Error(`File ${fileId} not found`);
       }
 
@@ -326,6 +358,11 @@ class DriveService {
         this.logger.warn(
           `File ${metadata.data.name} is up to date, skipping download`
         );
+        this.emit('fileSkipped', {
+          fileId,
+          name: metadata.data.name,
+          reason: 'up-to-date',
+        });
         return;
       }
 
@@ -342,6 +379,7 @@ class DriveService {
 
       if (downloadedSize === 0) {
         this.logger.warn(`Downloaded file is empty: ${filePath}`);
+        this.emit('fileEmpty', { fileId, filePath });
         throw new Error(`Downloaded file is empty: ${filePath}`);
       }
 
@@ -349,6 +387,12 @@ class DriveService {
         this.logger.warn(
           `File size mismatch for ${filePath}. Expected: ${expectedSize}, Got: ${downloadedSize}`
         );
+        this.emit('fileSizeMismatch', {
+          fileId,
+          filePath,
+          expectedSize,
+          actualSize: downloadedSize,
+        });
         throw new Error(
           `File size mismatch for ${filePath}. Expected: ${expectedSize}, Got: ${downloadedSize}`
         );
@@ -368,6 +412,11 @@ class DriveService {
       this.logger.log(
         `Successfully downloaded ${metadata.data.name} (${downloadedSize} bytes)`
       );
+      this.emit('fileVerified', {
+        fileId,
+        name: metadata.data.name,
+        size: downloadedSize,
+      });
     } catch (error) {
       // Clean up temporary file if it exists
       if (
@@ -386,7 +435,11 @@ class DriveService {
         filePath,
         retryCount: 0,
       });
-      this.logger.error(`Error downloading file ${filePath}: ${error}`);
+      this.logger.error(
+        `Error downloading file ${filePath}: ${error}`,
+        this.emit
+      );
+      this.emit('fileDownloadError', { fileId, filePath, error });
       throw error;
     }
   }

@@ -149,14 +149,105 @@ async function startSync() {
 | `cacheDir`      | string  | './'                      | Directory for cache storage              |
 | `credentials`   | object  | required                  | Google Drive service account credentials |
 
-## Events (TODO: Pending..)
+## Events
 
-| Event            | Description                           | Payload                                                                  |
-| ---------------- | ------------------------------------- | ------------------------------------------------------------------------ |
-| `fileDownloaded` | Triggered when a file is downloaded   | `{ name: string, size: number }`                                         |
-| `syncStarted`    | Triggered when sync process starts    | -                                                                        |
-| `syncCompleted`  | Triggered when sync process completes | `{ filesProcessed: number, bytesTransferred: number, duration: number }` |
-| `error`          | Triggered when an error occurs        | `{ message: string, code?: string, details?: any }`                      |
+| Event                   | Description                                   | Payload                                                        |
+| ----------------------- | --------------------------------------------- | -------------------------------------------------------------- |
+| `initializing`          | Triggered when initialization starts          | `{}`                                                           |
+| `initialized`           | Triggered when initialization completes       | `{}`                                                           |
+| `alreadyInitialized`    | Triggered when already initialized            | `{}`                                                           |
+| `cacheLoaded`           | Triggered when cache is loaded                | `{}`                                                           |
+| `directoryCreated`      | Triggered when download directory is created  | `{ path: string }`                                             |
+| `notInitialized`        | Triggered when sync is attempted without init | `{}`                                                           |
+| `syncStarted`           | Triggered when sync process starts            | `{}`                                                           |
+| `foldersFound`          | Triggered when root folders are found         | `{ count: number, folders: GDriveFile[] }`                     |
+| `folderDownloadStarted` | Triggered when a folder download starts       | `{ folder: GDriveFile, path: string }`                         |
+| `folderDownloaded`      | Triggered when a folder is downloaded         | `{ folder: GDriveFile, path: string, structure: LocalFolder }` |
+| `folderError`           | Triggered when a folder download fails        | `{ folder: GDriveFile, error: any }`                           |
+| `syncCompleted`         | Triggered when sync process completes         | `{ structure: LocalFolder[] }`                                 |
+| `error`                 | Triggered when a general error occurs         | `{ message: string }`                                          |
+| `syncError`             | Triggered when sync process fails             | `{ error: any }`                                               |
+
+### DriveService Events
+
+| Event                      | Description                                 | Payload                                                                          |
+| -------------------------- | ------------------------------------------- | -------------------------------------------------------------------------------- |
+| `connectionTested`         | Triggered when connection test completes    | `{ success: boolean }`                                                           |
+| `connectionError`          | Triggered when connection test fails        | `{ error: any }`                                                                 |
+| `foldersListed`            | Triggered when folders are listed           | `{ count: number, folders: GDriveFile[] }`                                       |
+| `listFoldersError`         | Triggered when listing folders fails        | `{ error: any }`                                                                 |
+| `filesListed`              | Triggered when files in a folder are listed | `{ folderId: string, folderPath: string, count: number, files: GDriveFile[] }`   |
+| `listFilesError`           | Triggered when listing files fails          | `{ folderId: string, folderPath: string, error: any }`                           |
+| `fileDownloadStarted`      | Triggered when a file download starts       | `{ file: GDriveFile, filePath: string }`                                         |
+| `fileDownloaded`           | Triggered when a file is downloaded         | `{ file: GDriveFile, filePath: string }`                                         |
+| `subFolderDownloadStarted` | Triggered when a subfolder download starts  | `{ folder: GDriveFile, path: string }`                                           |
+| `subFolderDownloaded`      | Triggered when a subfolder is downloaded    | `{ folder: GDriveFile, path: string, structure: LocalFolder }`                   |
+| `fileProcessingError`      | Triggered when processing a file fails      | `{ file: GDriveFile, error: any }`                                               |
+| `folderDownloadError`      | Triggered when downloading a folder fails   | `{ folderId: string, folderPath: string, error: any }`                           |
+| `fileRetry`                | Triggered when a file download is retried   | `{ fileId: string, filePath: string, retryCount: number, delay: number }`        |
+| `fileRetryFailed`          | Triggered when a file download retry fails  | `{ fileId: string, filePath: string, retryCount: number, error: any }`           |
+| `fileNotFound`             | Triggered when a file is not found          | `{ fileId: string }`                                                             |
+| `fileSkipped`              | Triggered when a file is skipped            | `{ fileId: string, name: string, reason: string }`                               |
+| `fileEmpty`                | Triggered when a downloaded file is empty   | `{ fileId: string, filePath: string }`                                           |
+| `fileSizeMismatch`         | Triggered when file size doesn't match      | `{ fileId: string, filePath: string, expectedSize: number, actualSize: number }` |
+| `fileVerified`             | Triggered when a file is verified           | `{ fileId: string, name: string, size: number }`                                 |
+| `fileDownloadError`        | Triggered when a file download fails        | `{ fileId: string, filePath: string, error: any }`                               |
+
+### Example: Using Events
+
+```typescript
+import { GDriveSync } from '@mokbhaimj/gdrive-sync';
+
+const sync = new GDriveSync({
+  // ... configuration options
+});
+
+// Register event listeners
+sync.on('initializing', () => {
+  console.log('🚀 Initializing Google Drive Sync...');
+});
+
+sync.on('initialized', () => {
+  console.log('✅ Google Drive Sync initialized successfully');
+});
+
+sync.on('syncStarted', () => {
+  console.log('🔄 Starting sync process...');
+});
+
+sync.on('foldersFound', (data) => {
+  console.log(`📂 Found ${data.count} root folders to sync`);
+});
+
+sync.on('folderDownloadStarted', (data) => {
+  console.log(`⏳ Downloading folder: ${data.folder.name}`);
+});
+
+sync.on('folderDownloaded', (data) => {
+  console.log(`✅ Downloaded folder: ${data.folder.name}`);
+});
+
+sync.on('syncCompleted', (data) => {
+  console.log('🎉 Sync completed successfully!');
+  console.log(`📊 Downloaded ${data.structure.length} folders`);
+});
+
+sync.on('error', (data) => {
+  console.error('❌ Error:', data.message);
+});
+
+// Initialize and start syncing
+async function start() {
+  try {
+    await sync.initialize();
+    await sync.sync();
+  } catch (error) {
+    console.error('Failed to sync:', error);
+  }
+}
+
+start();
+```
 
 ## Error Handling
 
