@@ -1,10 +1,10 @@
 # mokbhai/gdrive-sync
 
-## 1.0.3
+## 1.0.4
 
 ### Patch Changes
 
-- a8c477b: false esm error
+- a8c477b: Bug: Fixes false esm error
 
 ## 1.0.4
 
