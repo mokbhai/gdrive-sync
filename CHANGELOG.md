@@ -6,7 +6,7 @@
 
 - 3c8334a: Enhanced Cache service and Add functionality to save local folder structure to JSON file after synchronization in GDriveSync
 
-## 1.0.4
+## 1.0.5
 
 ### Patch Changes
 

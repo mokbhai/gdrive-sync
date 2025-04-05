@@ -66,7 +66,9 @@ export class GDriveSync {
     const validateCred = new ValidateCred(credentials);
     const validation = validateCred.validateCredentials(credentials);
     if (!validation.isValid) {
-      this.logger.error(`Invalid credentials:\n${validation.errors.join('\n')}`);
+      this.logger.error(
+        `Invalid credentials:\n${validation.errors.join('\n')}`
+      );
       throw new Error(`Invalid credentials:\n${validation.errors.join('\n')}`);
     }
 
@@ -137,7 +139,9 @@ export class GDriveSync {
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
-      this.logger.error(`Failed to initialize Google Drive API: ${errorMessage}`);
+      this.logger.error(
+        `Failed to initialize Google Drive API: ${errorMessage}`
+      );
       throw new Error(`Failed to initialize Google Drive API: ${errorMessage}`);
     }
   }
