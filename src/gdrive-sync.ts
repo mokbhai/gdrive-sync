@@ -66,6 +66,7 @@ export class GDriveSync {
     const validateCred = new ValidateCred(credentials);
     const validation = validateCred.validateCredentials(credentials);
     if (!validation.isValid) {
+      this.logger.error(`Invalid credentials:\n${validation.errors.join('\n')}`);
       throw new Error(`Invalid credentials:\n${validation.errors.join('\n')}`);
     }
 
@@ -99,7 +100,7 @@ export class GDriveSync {
 
     // Check if credentials are set, and if not, throw an error
     if (!this.credentials) {
-      this.logger.log('No credentials found.');
+      this.logger.error('No credentials found.');
       throw new Error('No credentials found. Please set credentials first.');
     }
 
@@ -128,7 +129,7 @@ export class GDriveSync {
       );
       const testConnection = await this.driveService.testConnection();
       if (!testConnection) {
-        this.logger.log('Failed to initialize Google Drive API');
+        this.logger.error('Failed to initialize Google Drive API');
         throw new Error('Failed to initialize Google Drive API');
       }
 
@@ -136,7 +137,7 @@ export class GDriveSync {
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
-      this.logger.log(`Failed to initialize Google Drive API: ${errorMessage}`);
+      this.logger.error(`Failed to initialize Google Drive API: ${errorMessage}`);
       throw new Error(`Failed to initialize Google Drive API: ${errorMessage}`);
     }
   }
@@ -147,7 +148,7 @@ export class GDriveSync {
   public async sync(): Promise<void> {
     try {
       if (!this.driveClient || !this.driveService) {
-        this.logger.log('Google Drive Sync not initialized');
+        this.logger.warn('Google Drive Sync not initialized');
         await this.initialize();
       }
 
@@ -168,25 +169,18 @@ export class GDriveSync {
             await this.driveService.downloadFilesAndFolder(folder.id, fullPath);
           localFoldersStructure.push(folderStructure);
         } catch (error: unknown) {
-          this.logger.log(
+          this.logger.error(
             `Error processing root folder ${folder.name}: ${error}`
           );
-          // Continue with other folders even if one fails
         }
       }
-      // TODO: Implement file synchronization logic
-      // This would involve:
-      // 1. Listing files from Google Drive
-      // 2. Comparing with local files
-      // 3. Downloading new or changed files
-      // 4. Maintaining folder structure if enabled
 
       // Save cache after sync is complete
       await this.cacheService?.saveCache();
 
       this.logger.log('Google Drive sync completed successfully');
     } catch (error: unknown) {
-      this.logger.log(`Failed to sync with Google Drive: ${error}`);
+      this.logger.error(`Failed to sync with Google Drive: ${error}`);
       throw error;
     }
   }

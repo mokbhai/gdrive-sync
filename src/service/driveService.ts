@@ -47,7 +47,7 @@ class DriveService {
     while (this.queue.length > 0) {
       const item = this.queue[0];
       if (!item) {
-        this.logger.log('No item in queue');
+        this.logger.warn('No item in queue');
         break;
       }
       try {
@@ -68,7 +68,7 @@ class DriveService {
         } else {
           // Max retries reached, remove from queue
           this.queue.shift();
-          this.logger.log(
+          this.logger.error(
             `Failed to download file after ${this.MAX_RETRIES} attempts: ${item.filePath}`
           );
         }
@@ -92,7 +92,7 @@ class DriveService {
 
       return true;
     } catch (error) {
-      this.logger.log(`Error testing connection: ${error}`);
+      this.logger.error(`Error testing connection: ${error}`);
       throw error;
     }
   }
@@ -119,11 +119,11 @@ class DriveService {
         modifiedTime: file.modifiedTime,
       })) as GDriveFile[];
 
-      this.logger.log(`Found ${folders.length} folders`);
+      this.logger.log(`Found ${folders.length} folders in drive`);
 
       return folders;
     } catch (error) {
-      this.logger.log(`Error listing files: ${error}`);
+      this.logger.error(`Error listing files: ${error}`);
       throw error;
     }
   }
@@ -153,9 +153,11 @@ class DriveService {
         modifiedTime: file.modifiedTime,
       })) as GDriveFile[];
 
+      this.logger.log(`Found ${files.length} files in ${folderPath}`);
+
       return files;
     } catch (error) {
-      this.logger.log(`Error listing files: ${error}`);
+      this.logger.error(`Error listing files: ${error}`);
       throw error;
     }
   }
@@ -216,7 +218,7 @@ class DriveService {
                 folder.folders.push(subFolder);
               }
             } catch (error) {
-              this.logger.log(
+              this.logger.error(
                 `Error processing file/folder ${file.name}: ${error}`
               );
             }
@@ -226,7 +228,7 @@ class DriveService {
 
       return folder;
     } catch (error) {
-      this.logger.log(`Error processing folder ${folderPath}: ${error}`);
+      this.logger.error(`Error processing folder ${folderPath}: ${error}`);
       throw error;
     }
   }
@@ -287,7 +289,7 @@ class DriveService {
     } catch (error) {
       if (retryCount < this.MAX_RETRIES) {
         const delay = this.INITIAL_RETRY_DELAY * Math.pow(2, retryCount);
-        this.logger.log(
+        this.logger.error(
           `Retrying download of ${filePath} after ${delay}ms (attempt ${
             retryCount + 1
           }/${this.MAX_RETRIES})`
@@ -321,7 +323,7 @@ class DriveService {
       );
 
       if (!needsUpdate) {
-        this.logger.log(
+        this.logger.warn(
           `File ${metadata.data.name} is up to date, skipping download`
         );
         return;
@@ -339,12 +341,12 @@ class DriveService {
       const expectedSize = parseInt(metadata.data.size || '0', 10);
 
       if (downloadedSize === 0) {
-        this.logger.log(`Downloaded file is empty: ${filePath}`);
+        this.logger.warn(`Downloaded file is empty: ${filePath}`);
         throw new Error(`Downloaded file is empty: ${filePath}`);
       }
 
       if (expectedSize > 0 && downloadedSize !== expectedSize) {
-        this.logger.log(
+        this.logger.warn(
           `File size mismatch for ${filePath}. Expected: ${expectedSize}, Got: ${downloadedSize}`
         );
         throw new Error(
@@ -384,7 +386,7 @@ class DriveService {
         filePath,
         retryCount: 0,
       });
-      this.logger.log(`Error downloading file ${filePath}: ${error}`);
+      this.logger.error(`Error downloading file ${filePath}: ${error}`);
       throw error;
     }
   }
