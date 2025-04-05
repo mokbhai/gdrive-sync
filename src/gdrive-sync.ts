@@ -186,17 +186,10 @@ export class GDriveSync {
           await fsPromises.mkdir(fullPath, { recursive: true });
 
           this.logger.log(`Downloading Folder: ${folder.name} at ${fullPath}`);
-          this.emit('folderDownloadStarted', { folder, path: fullPath });
 
           const folderStructure =
             await this.driveService.downloadFilesAndFolder(folder.id, fullPath);
           localFoldersStructure.push(folderStructure);
-
-          this.emit('folderDownloaded', {
-            folder,
-            path: fullPath,
-            structure: folderStructure,
-          });
         } catch (error: unknown) {
           this.logger.error(
             `Error processing root folder ${folder.name}: ${error}`

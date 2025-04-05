@@ -180,8 +180,6 @@ async function startSync() {
 | `listFilesError`           | Triggered when listing files fails          | `{ folderId: string, folderPath: string, error: any }`                           |
 | `fileDownloadStarted`      | Triggered when a file download starts       | `{ file: GDriveFile, filePath: string }`                                         |
 | `fileDownloaded`           | Triggered when a file is downloaded         | `{ file: GDriveFile, filePath: string }`                                         |
-| `subFolderDownloadStarted` | Triggered when a subfolder download starts  | `{ folder: GDriveFile, path: string }`                                           |
-| `subFolderDownloaded`      | Triggered when a subfolder is downloaded    | `{ folder: GDriveFile, path: string, structure: LocalFolder }`                   |
 | `fileProcessingError`      | Triggered when processing a file fails      | `{ file: GDriveFile, error: any }`                                               |
 | `folderDownloadError`      | Triggered when downloading a folder fails   | `{ folderId: string, folderPath: string, error: any }`                           |
 | `fileRetry`                | Triggered when a file download is retried   | `{ fileId: string, filePath: string, retryCount: number, delay: number }`        |
