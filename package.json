@@ -1,0 +1,75 @@
+{
+  "name": "@mokbhaimj/gdrive-sync",
+  "description": "A powerful Node.js package for automated Google Drive synchronization with advanced features. Downloads and maintains folder structure from Google Drive, scheduled downloads, and comprehensive logging. Perfect for automated backup solutions and content management systems.",
+  "version": "1.0.2",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "ci": "npm run build && npm run check-format && npm run check-exports && npm run lint",
+    "lint": "tsc",
+    "start": "node dist/index.js",
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest",
+    "test:watch": "vitest watch",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "check-format": "prettier --check \"src/**/*.ts\"",
+    "check-types": "tsc --noEmit",
+    "check-exports": "attw --pack . --ignore-rules=cjs-resolves-to-esm",
+    "prepublishOnly": "npm run build && npm run check-types",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "local-release": "changeset version && changeset publish",
+    "release": "npm run build && changeset publish"
+  },
+  "keywords": [
+    "google-drive",
+    "sync",
+    "backup",
+    "automation",
+    "nodejs",
+    "typescript",
+    "file-management",
+    "cloud-storage",
+    "scheduled-downloads",
+    "folder-structure"
+  ],
+  "author": "Mokshit Jain <mokshitjain18@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "googleapis": "^133.0.0",
+    "winston": "^3.17.0"
+  },
+  "homepage": "https://github.com/mokbhai/gdrive-sync",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mokbhai/gdrive-sync.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mokbhai/gdrive-sync/issues"
+  },
+  "files": [
+    "dist"
+  ],
+  "devDependencies": {
+    "@arethetypeswrong/cli": "^0.17.4",
+    "@changesets/cli": "^2.28.1",
+    "prettier": "^3.5.3",
+    "tsup": "^8.4.0",
+    "typescript": "^5.8.3",
+    "vitest": "^3.1.1"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
