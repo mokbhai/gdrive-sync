@@ -1,5 +1,11 @@
 # mokbhai/gdrive-sync
 
+## 1.0.4
+
+### Patch Changes
+
+- bd80d58: docs: Add detailed setup instructions for Google Drive service account in README
+
 ## 1.0.3
 
 ### Patch Changes
