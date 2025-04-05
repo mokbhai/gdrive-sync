@@ -1,5 +1,11 @@
 # mokbhai/gdrive-sync
 
+## 1.1.0
+
+### Minor Changes
+
+- 2d89771: Events and Emits are active
+
 ## 1.0.7
 
 ### Patch Changes
