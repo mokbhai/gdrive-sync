@@ -31,6 +31,18 @@ class Logger {
       this?.logger?.info(message);
     }
   }
+
+  public error(message: string): void {
+    if (this.enableLogging) {
+      this?.logger?.error(message);
+    }
+  }
+
+  public warn(message: string): void {
+    if (this.enableLogging) {
+      this?.logger?.warn(message);
+    }
+  }
 }
 
 export default Logger;
