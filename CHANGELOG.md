@@ -1,5 +1,11 @@
 # mokbhai/gdrive-sync
 
+## 1.0.3
+
+### Patch Changes
+
+- 1adfe3a: False ESM error solved
+
 ## 1.0.2
 
 ### Patch Changes
