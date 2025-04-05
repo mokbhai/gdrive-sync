@@ -87,15 +87,6 @@ const sync = new GDriveSync({
   },
 });
 
-// Set up event listeners
-sync.on('fileDownloaded', (file) => {
-  console.log(`Downloaded file: ${file.name}`);
-});
-
-sync.on('error', (error) => {
-  console.error('Sync error:', error.message);
-});
-
 // Initialize and start sync
 async function start() {
   await sync.initialize();
@@ -121,23 +112,6 @@ const sync = new GDriveSync({
   credentials: {
     // ... your credentials
   },
-});
-
-// Comprehensive event listeners
-sync.on('fileDownloaded', (file) => {
-  console.log(`Downloaded: ${file.name} (${file.size} bytes)`);
-});
-
-sync.on('syncStarted', () => {
-  console.log('Sync process started');
-});
-
-sync.on('syncCompleted', (stats) => {
-  console.log('Sync completed:', {
-    filesProcessed: stats.filesProcessed,
-    bytesTransferred: stats.bytesTransferred,
-    duration: stats.duration,
-  });
 });
 
 // Initialize with error handling
@@ -175,7 +149,7 @@ async function startSync() {
 | `cacheDir`      | string  | './'                      | Directory for cache storage              |
 | `credentials`   | object  | required                  | Google Drive service account credentials |
 
-## Events
+## Events (TODO: Pending..)
 
 | Event            | Description                           | Payload                                                                  |
 | ---------------- | ------------------------------------- | ------------------------------------------------------------------------ |

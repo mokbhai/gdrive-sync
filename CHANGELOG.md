@@ -1,5 +1,11 @@
 # mokbhai/gdrive-sync
 
+## 1.0.7
+
+### Patch Changes
+
+- Examples and Docs updated
+
 ## 1.0.6
 
 ### Patch Changes
