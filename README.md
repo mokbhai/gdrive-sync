@@ -18,6 +18,58 @@ A powerful Node.js package for automated Google Drive synchronization with advan
 npm install @mokbhaimj/gdrive-sync
 ```
 
+## Setting Up Google Drive Service Account
+
+To use this package, you'll need to create a Google Drive service account and obtain credentials. Here's how:
+
+1. **Create a Google Cloud Project**
+
+   - Go to [Google Cloud Console](https://console.cloud.google.com/projectselector/iam-admin/serviceaccounts/create?walkthrough_id=iam--create-service-account#step_index=1)
+   - Click "Create Project" or select an existing project
+   - Give your project a name and click "Create"
+
+2. **Enable the Google Drive API**
+
+   - In your project, go to "APIs & Services" > "Library"
+   - Search for "Google Drive API"
+   - Click "Enable"
+
+3. **Create a Service Account**
+
+   - Go to "APIs & Services" > "Credentials"
+   - Click "Create Credentials" > "Service Account"
+   - Fill in the service account details:
+     - Name: Choose a descriptive name
+     - ID: Will be auto-generated
+     - Description: Optional
+   - Click "Create and Continue"
+   - For "Role", select "Project" > "Editor"
+   - Click "Continue" and then "Done"
+
+4. **Generate Service Account Key**
+
+   - Find your service account in the list
+   - Click on the service account email
+   - Go to "Keys" tab
+   - Click "Add Key" > "Create new key"
+   - Choose "JSON" format
+   - Click "Create"
+   - The key file will be downloaded automatically
+
+5. **Share Google Drive Folder**
+
+   - Open Google Drive
+   - Right-click the folder you want to sync
+   - Click "Share"
+   - Add your service account email (found in the JSON file under `client_email`)
+   - Give "Editor" or "Viewer" access
+   - Click "Share"
+
+6. **Use the Credentials**
+   - The downloaded JSON file contains your credentials
+   - Use these credentials in your code as shown in the examples below
+   - Keep this file secure and never commit it to version control
+
 ## Quick Start
 
 ```javascript
@@ -27,7 +79,7 @@ import { GDriveSync } from '@mokbhaimj/gdrive-sync';
 const sync = new GDriveSync({
   credentials: {
     type: 'service_account',
-    client_email: 'your-client-email',
+    client_email: 'your-service-account@project.iam.gserviceaccount.com',
     private_key_id: 'your-private-key-id',
     privateKey: 'your-private-key',
     project_id: 'your-project-id',
