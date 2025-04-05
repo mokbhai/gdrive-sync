@@ -1,5 +1,11 @@
 # mokbhai/gdrive-sync
 
+## 1.1.2
+
+### Patch Changes
+
+- ba4d76e: folderDownloadStarted event data return value update
+
 ## 1.1.1
 
 ### Patch Changes

@@ -1,7 +1,7 @@
 {
   "name": "@mokbhaimj/gdrive-sync",
   "description": "A powerful Node.js package for automated Google Drive synchronization with advanced features. Downloads and maintains folder structure from Google Drive, scheduled downloads, and comprehensive logging. Perfect for automated backup solutions and content management systems.",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
