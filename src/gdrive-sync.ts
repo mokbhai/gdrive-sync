@@ -175,6 +175,10 @@ export class GDriveSync {
         }
       }
 
+      await fsPromises.writeFile(
+        path.join(this.downloadPath, 'localFoldersStructure.json'),
+        JSON.stringify(localFoldersStructure, null, 2)
+      );
       // Save cache after sync is complete
       await this.cacheService?.saveCache();
 
