@@ -114,6 +114,7 @@ class DriveService {
         q: "mimeType = 'application/vnd.google-apps.folder' and trashed = false",
         fields: 'files(id, name, mimeType, parents, modifiedTime)',
         spaces: 'drive',
+        pageSize: 1000,
       });
 
       const folders = (response.data.files || []).map((file: GDriveFile) => ({

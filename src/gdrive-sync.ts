@@ -171,16 +171,34 @@ export class GDriveSync {
       this.emit('syncStarted', {});
 
       const folders = await this.driveService.listFolders();
-      const rootFolders = folders.filter((folder) => !folder.parents);
+      const topLevelFolders = new Set<GDriveFile>();
       const localFoldersStructure: LocalFolder[] = [];
 
-      this.emit('foldersFound', {
-        count: rootFolders.length,
-        folders: rootFolders,
-      });
+      // this.emit('rootFoldersFound', {
+      //   count: rootFolders.length,
+      //   folders: rootFolders,
+      // });
 
-      // Download each folder
-      for (const folder of rootFolders) {
+      for (const folder of folders) {
+        if (!folder.parents || folder.parents.length === 0) {
+          topLevelFolders.add(folder);
+          continue;
+        }
+        let currentFolder = folder;
+        while (true) {
+          const parent = folders.find(
+            (f) => f.id === currentFolder.parents?.[0]
+          );
+          if (!parent) {
+            topLevelFolders.add(currentFolder);
+            break;
+          }
+          currentFolder = parent;
+        }
+      }
+
+      // Process top-level folders
+      for (const folder of topLevelFolders) {
         try {
           const fullPath = path.join(this.downloadPath, folder.name);
           await fsPromises.mkdir(fullPath, { recursive: true });
@@ -192,7 +210,7 @@ export class GDriveSync {
           localFoldersStructure.push(folderStructure);
         } catch (error: unknown) {
           this.logger.error(
-            `Error processing root folder ${folder.name}: ${error}`
+            `Error processing top-level folder ${folder.name}: ${error}`
           );
           this.emit('folderError', { folder, error });
         }
