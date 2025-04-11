@@ -110,25 +110,43 @@ class DriveService {
   async listFolders(): Promise<GDriveFile[]> {
     try {
       await rateLimiter.acquire();
-      const response = await this.driveClient.files.list({
-        q: "mimeType = 'application/vnd.google-apps.folder' and trashed = false",
-        fields: 'files(id, name, mimeType, parents, modifiedTime)',
-        spaces: 'drive',
-        pageSize: 1000,
+
+      let allFolders: GDriveFile[] = [];
+      let nextPageToken: string | undefined = undefined;
+
+      do {
+        const response: any = await this.driveClient.files.list({
+          q: "mimeType = 'application/vnd.google-apps.folder' and trashed = false",
+          fields:
+            'nextPageToken, files(id, name, mimeType, parents, modifiedTime)',
+          spaces: 'drive',
+          pageToken: nextPageToken,
+        });
+
+        const folders = (response.data.files || []).map((file: GDriveFile) => ({
+          id: file.id || '',
+          name: file.name || '',
+          mimeType: file.mimeType || '',
+          parents: file.parents,
+          modifiedTime: file.modifiedTime,
+        })) as GDriveFile[];
+
+        allFolders = [...allFolders, ...folders];
+        nextPageToken = response.data.nextPageToken;
+
+        // If we have a next page token, wait a bit before making the next request
+        if (nextPageToken) {
+          await sleep(100);
+        }
+      } while (nextPageToken);
+
+      this.logger.log(`Found ${allFolders.length} folders in drive`);
+      this.emit('foldersListed', {
+        count: allFolders.length,
+        folders: allFolders,
       });
 
-      const folders = (response.data.files || []).map((file: GDriveFile) => ({
-        id: file.id || '',
-        name: file.name || '',
-        mimeType: file.mimeType || '',
-        parents: file.parents,
-        modifiedTime: file.modifiedTime,
-      })) as GDriveFile[];
-
-      this.logger.log(`Found ${folders.length} folders in drive`);
-      this.emit('foldersListed', { count: folders.length, folders });
-
-      return folders;
+      return allFolders;
     } catch (error) {
       this.logger.error(`Error listing files: ${error}`, this.emit);
       throw error;
@@ -145,30 +163,46 @@ class DriveService {
   async listFiles(folderId: string, folderPath: string): Promise<GDriveFile[]> {
     try {
       await rateLimiter.acquire();
-      const response = await this.driveClient.files.list({
-        q: `'${folderId}' in parents and trashed = false`,
-        fields: 'files(id, name, mimeType, parents, modifiedTime)',
-        spaces: 'drive',
-      });
 
-      const files = (response.data.files || []).map((file: GDriveFile) => ({
-        id: file.id || '',
-        name: file.name || '',
-        mimeType: file.mimeType || '',
-        parents: file.parents,
-        path: folderPath,
-        modifiedTime: file.modifiedTime,
-      })) as GDriveFile[];
+      let allFiles: GDriveFile[] = [];
+      let nextPageToken: string | undefined = undefined;
 
-      this.logger.log(`Found ${files.length} files in ${folderPath}`);
+      do {
+        const response: any = await this.driveClient.files.list({
+          q: `'${folderId}' in parents and trashed = false`,
+          fields:
+            'nextPageToken, files(id, name, mimeType, parents, modifiedTime)',
+          spaces: 'drive',
+          pageToken: nextPageToken,
+        });
+
+        const files = (response.data.files || []).map((file: GDriveFile) => ({
+          id: file.id || '',
+          name: file.name || '',
+          mimeType: file.mimeType || '',
+          parents: file.parents,
+          path: folderPath,
+          modifiedTime: file.modifiedTime,
+        })) as GDriveFile[];
+
+        allFiles = [...allFiles, ...files];
+        nextPageToken = response.data.nextPageToken;
+
+        // If we have a next page token, wait a bit before making the next request
+        if (nextPageToken) {
+          await sleep(100);
+        }
+      } while (nextPageToken);
+
+      this.logger.log(`Found ${allFiles.length} files in ${folderPath}`);
       this.emit('filesListed', {
         folderId,
         folderPath,
-        count: files.length,
-        files,
+        count: allFiles.length,
+        files: allFiles,
       });
 
-      return files;
+      return allFiles;
     } catch (error) {
       this.logger.error(`Error listing files: ${error}`, this.emit);
       throw error;
