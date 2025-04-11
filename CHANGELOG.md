@@ -1,5 +1,11 @@
 # mokbhai/gdrive-sync
 
+## 1.2.0
+
+### Minor Changes
+
+- 2bf925f: Bug Fixes: Finding of Top level folder logic updated
+
 ## 1.1.2
 
 ### Patch Changes
