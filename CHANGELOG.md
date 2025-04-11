@@ -1,5 +1,11 @@
 # mokbhai/gdrive-sync
 
+## 1.3.0
+
+### Minor Changes
+
+- 9ffb05b: Sync Google Drive Data by using nextPageToken where data len is more than 100.
+
 ## 1.2.0
 
 ### Minor Changes
